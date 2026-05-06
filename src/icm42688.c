@@ -1,9 +1,9 @@
-#include "imu_lib.h"
+#include "icm42688.h"
 
 IMU_Data imu;
 
-//функция для упрощённой отправки конфигурации
-void set_function_in(uint8_t write_register, uint8_t data_setting) { //страница 52 в datasheet: сначала адрес потом данные
+//a function for simplified configuration sending
+void set_function_in(uint8_t write_register, uint8_t data_setting) { //page 52 in the dataset: address first, then data
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 0);
 	HAL_SPI_Transmit(&hspi1, (uint8_t[]) { write_register, data_setting }, 2, 10);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 1);
@@ -11,18 +11,18 @@ void set_function_in(uint8_t write_register, uint8_t data_setting) { //страница 
 	HAL_Delay(10);
 }
 
-//https://byte-tools.com/en/binary/bin-to-hex/
-uint16_t hello_imu(void) { //подумаь над функцией
+uint16_t hello_imu(void) {
 	uint8_t data_rx;
 	uint8_t who_am_i = 0x75 | READ_BIT_IMU;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 0); //cs low
-	HAL_SPI_Transmit(&hspi1, &who_am_i, 1, 10); //просим данные в регистр who_am_i он его не видит
+	HAL_SPI_Transmit(&hspi1, &who_am_i, 1, 10); 
 	HAL_SPI_Receive(&hspi1, &data_rx, 1, 10);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 1); // cs hight
 	return data_rx;
 }
 uint8_t rx_buff[12] = { 0 };
 int16_t raw_data[6] = { 0 };
+
 HAL_StatusTypeDef IMU_data_update(void) {
 
 	uint8_t reg = AXIS_ACCEL_X | READ_BIT_IMU;
@@ -38,9 +38,9 @@ HAL_StatusTypeDef IMU_data_update(void) {
 	imu.ay = ((int16_t)(raw_data[1])) * G / ACCEL_SENS_SCALE;//m/s^2
 	imu.az = ((int16_t)(raw_data[2])) * G / ACCEL_SENS_SCALE;//m/s^2
 
-	imu.gx = ((int16_t)(raw_data[3])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian
-	imu.gy = ((int16_t)(raw_data[4])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian
-	imu.gz = ((int16_t)(raw_data[5])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian
+	imu.gx = ((int16_t)(raw_data[3])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian/s
+	imu.gy = ((int16_t)(raw_data[4])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian/s
+	imu.gz = ((int16_t)(raw_data[5])) * (PI / 180.0F) / GYRO_SENS_SCALE;//radian/s
 
 	return state;
 
