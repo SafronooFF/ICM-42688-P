@@ -19,7 +19,7 @@ Sensor data is automatically processed and stored in a global `IMU_Data` structu
 * Accelerometer (m/s²): `imu.ax`, `imu.ay`, `imu.az`
 * Gyroscope (rad/s): `imu.gx`, `imu.gy`, `imu.gz`
 <br>example of data usage
-```
+```C++
 void update_fltr(void){
   uint32_t current_tick = HAL_GetTick();
   float dt = (current_tick - last_tick) / 1000.0f;
